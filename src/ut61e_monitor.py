@@ -16,7 +16,7 @@ import time
 import datetime
 from serial import SerialException
 
-SLEEP_TIME = 0.1
+SLEEP_TIME = 1
 PORT = "/dev/tty.usbserial-1410"
 
 if __name__ == '__main__':
@@ -40,7 +40,9 @@ if __name__ == '__main__':
       if not simplified:
         print()
         print(datetime.datetime.now())
-      print(meas)
+        print(meas)
+      else:
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ',', meas)
 
       time.sleep(SLEEP_TIME)
 
