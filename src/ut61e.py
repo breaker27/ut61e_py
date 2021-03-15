@@ -83,7 +83,6 @@ HZ = 0b00000001
 # Byte 11 bit 1
 HOLD = 0b00000010
 
-
 # Measurement ranges
 """
 Byte 6:  B         3         6         2         D         F         0        2
@@ -104,7 +103,7 @@ RANGE_V = (
     ('220.00', 'V', 0.01),
     ('1000.0', 'V', 0.1),
     ('220.00', 'mV', 0.01),
-    )
+)
 
 RANGE_R = (
     ('220.00', 'Ohm', 0.01),
@@ -114,7 +113,7 @@ RANGE_R = (
     ('2.2000', 'MOhm', 0.0001),
     ('22.000', 'MOhm', 0.001),
     ('220.00', 'MOhm', 0.01),
-    )
+)
 
 RANGE_C = (
     ('22.000', 'nF', 0.001),
@@ -125,7 +124,7 @@ RANGE_C = (
     ('2.2000', 'mF', 0.0001),
     ('22.000', 'mF', 0.001),
     ('220.00', 'mF', 0.01),
-    )
+)
 
 RANGE_F = (
     ('220.00', 'Hz', 0.01),
@@ -136,21 +135,19 @@ RANGE_F = (
     ('2.2000', 'MHz', 0.0001),
     ('22.000', 'MHz', 0.001),
     ('220.00', 'MHz', 0.01),
-    )
+)
 
 RANGE_I_UA = (
     ('220.00', 'uA', 0.01),
     ('2200.0', 'uA', 0.1),
-    )
+)
 
 RANGE_I_MA = (
     ('22.000', 'mA', 0.001),
     ('220.00', 'mA', 0.01),
-    )
+)
 
-RANGE_I_A = (
-    ('10.000', 'A', 0.001),
-    )
+RANGE_I_A = (('10.000', 'A', 0.001), )
 
 RANGE_PERCENT = (
     ('100.0', '%', 0.01),
@@ -160,7 +157,7 @@ RANGE_PERCENT = (
     ('100.0', '%', 0.01),
     ('100.0', '%', 0.01),
     ('100.0', '%', 0.01),
-    )
+)
 
 # Measurement type
 """
@@ -195,46 +192,46 @@ MEAS_TYPE = (
     ('uA', RANGE_I_UA),
     ('ADP', None),
     ('mA', RANGE_I_MA),
-    )
+)
 
 # Normalization constants
 # Each value contains multiplier and target value
 NORM_RULES = {
     # Voltage
-    'V':    (1, 'V'),
-    'mV':   (1E-03, 'V'),
+    'V': (1, 'V'),
+    'mV': (1E-03, 'V'),
     # Current
-    'A':    (1, 'A'),
-    'mA':   (1E-03, 'A'),
-    'uA':   (1E-06, 'A'),
+    'A': (1, 'A'),
+    'mA': (1E-03, 'A'),
+    'uA': (1E-06, 'A'),
     # Resistance
-    'Ohm':  (1, 'Ohm'),
+    'Ohm': (1, 'Ohm'),
     'kOhm': (1E03, 'Ohm'),
     'MOhm': (1E06, 'Ohm'),
     # Capacitance
-    'nF':   (1E-9, 'F'),
-    'uF':   (1E-6, 'F'),
-    'mF':   (1E-3, 'F'),
+    'nF': (1E-9, 'F'),
+    'uF': (1E-6, 'F'),
+    'mF': (1E-3, 'F'),
     # Frequency
-    'Hz':   (1, 'Hz'),
-    'kHz':  (1E03, 'Hz'),
-    'MHz':  (1E06, 'Hz'),
+    'Hz': (1, 'Hz'),
+    'kHz': (1E03, 'Hz'),
+    'MHz': (1E06, 'Hz'),
     # Percent
-    '%':    (1, '%'),
-    }
+    '%': (1, '%'),
+}
 
 # Output format
 MEAS_RES = {
     # Mode and range
     'mode': None,
     'range': None,
-    
+
     # Displayed value
     'val': None,
     'units': None,
     'norm_val': None,
     'norm_units': None,
-    
+
     # Flags
     'percent': False,
     'minus': False,
@@ -249,21 +246,24 @@ MEAS_RES = {
     'auto': False,
     'hz': False,
     'hold': False,
-    
     'data_valid': False
-    }
+}
 
 
 class UT61E(object):
-    
-    def __init__(self, port):
-        self._port = port
-        self._ser = serial.Serial(self._port, BAUD_RATE, BITS, PARITY, STOP_BITS, timeout=TIMEOUT)
-        self._ser.setDTR(DTR)
-        self._ser.setRTS(RTS)
+  def __init__(self, port):
+    self._port = port
+    self._ser = serial.Serial(self._port,
+                              BAUD_RATE,
+                              BITS,
+                              PARITY,
+                              STOP_BITS,
+                              timeout=TIMEOUT)
+    self._ser.setDTR(DTR)
+    self._ser.setRTS(RTS)
 
-    def read_raw_data(self):
-        """Reads a new data packet from serial port.
+  def read_raw_data(self):
+    """Reads a new data packet from serial port.
         If the packet was valid returns array of integers.
         if the packet was not valid returns empty array.
         
@@ -274,191 +274,203 @@ class UT61E(object):
         not complete and the reading is done again. Maximum number of
         retries is defined by READ_RETRIES value.
         """
-        self._ser.reset_input_buffer()
-        for x in range(READ_RETRIES):
-            raw_data = self._ser.read_until(EOL, RAW_DATA_LENGTH)
-            # If 14 bytes were read, the packet is valid and the loop ends.
-            if len(raw_data) == RAW_DATA_LENGTH:
-                break
+    self._ser.reset_input_buffer()
+    for x in range(READ_RETRIES):
+      raw_data = self._ser.read_until(EOL, RAW_DATA_LENGTH)
+      # If 14 bytes were read, the packet is valid and the loop ends.
+      if len(raw_data) == RAW_DATA_LENGTH:
+        break
 
-        res = []
-        
-        # Check data validity
-        if self.is_data_valid(raw_data):
-            res = [ord(c) for c in bytes(raw_data).decode()]
-        
-        return res
+    res = []
 
-    def is_data_valid(self, raw_data):
-        """Checks data validity:
+    # Check data validity
+    if self.is_data_valid(raw_data):
+      res = [ord(c) for c in bytes(raw_data).decode()]
+
+    return res
+
+  def is_data_valid(self, raw_data):
+    """Checks data validity:
         1. 14 bytes long
         2. Footer bytes 0x0D 0x0A"""
-        # Data length
-        if len(raw_data) != RAW_DATA_LENGTH:
-            return False
-        
-        # End bytes
-        if not raw_data.endswith(EOL):
-            return False
-        
-        return True
-    
-    def read_hex_str_data(self):
-        """Returns raw data represented as string with hexadecimal values."""
-        data = self.read_raw_data()
-        codes = ["%02X" % c for c in data]
-        return " ".join(codes)
-    
-    def get_meas(self):
-        """Returns received measurement as dictionary"""
-        res = MEAS_RES.copy()
-        
-        raw_data = self.read_raw_data()
-        
-        # If raw data is empty, return
-        if len(raw_data) == 0:
-            res['data_valid'] = False
-            return res
+    # Data length
+    if len(raw_data) != RAW_DATA_LENGTH:
+      return False
 
-        # Percent
-        res['percent'] = True if raw_data[7] & PERCENT else False
-        
-        # Minus
-        minus = True if raw_data[7] & NEG else False
-        res['minus'] = minus
-        
-        # Low battery
-        res['low_bat'] = True if raw_data[7] & PERCENT else False
-        
-        # Overload
-        res['ovl'] = True if raw_data[7] & OL else False
-        
-        # Delta
-        res['delta'] = True if raw_data[8] & DELTA else False
-        
-        # UL
-        res['ul'] = True if raw_data[9] & UL else False
-        
-        # MAX
-        res['max'] = True if raw_data[9] & MAX else False
-        
-        # MIN
-        res['min'] = True if raw_data[9] & MIN else False
-        
-        # DC
-        res['dc'] = True if raw_data[10] & DC else False
-        
-        # AC
-        res['ac'] = True if raw_data[10] & AC else False
-        
-        # AUTO
-        res['auto'] = True if raw_data[10] & AUTO else False
-        
-        # Herz
-        res['hz'] = True if raw_data[10] & HZ else False
-        
-        # Hold
-        res['hold'] = True if raw_data[11] & HOLD else False
-        
-        # Measurement mode, range and units
-        meas_type = MEAS_TYPE[raw_data[6] & 0x0F]
-        range_id = raw_data[0] & 0b00000111
-        # If Herz or % is chosen in voltage or current measurement
-        # mode, corresponding range tuple is chosen.
-        if res['percent']:
-            meas_range = RANGE_PERCENT[range_id]
-        elif res['hz']:
-            meas_range = RANGE_F[range_id]
-        else:
-            meas_range = meas_type[1][range_id]
-        res['mode'] = meas_type[0]
-        res['range'] = meas_range[0]
-        res['units'] = meas_range[1]
-        multiplier = meas_range[2]
-        
-        # Value
-        val = 0
-        for n in DIGIT_BYTES:
-            digit = raw_data[n] & DIGIT_MASK
-            val = val * 10 + digit
-        val *= multiplier
-        val = -val if minus else val
-        res['val'] = val
-        
-        # Normalize value
-        nval = self.normalize_val(res['val'], res['units'])
-        res['norm_val'] = nval[0]
-        res['norm_units'] = nval[1]
-        
-        res['data_valid'] = True
-        
-        return res
-    
-    def normalize_val(self, val, units):
-        """Normalizes measured value to standard units. Voltage 
+    # End bytes
+    if not raw_data.endswith(EOL):
+      return False
+
+    return True
+
+  def read_hex_str_data(self):
+    """Returns raw data represented as string with hexadecimal values."""
+    data = self.read_raw_data()
+    codes = ["%02X" % c for c in data]
+    return " ".join(codes)
+
+  def get_meas(self):
+    """Returns received measurement as dictionary"""
+    res = MEAS_RES.copy()
+
+    raw_data = self.read_raw_data()
+
+    # If raw data is empty, return
+    if len(raw_data) == 0:
+      res['data_valid'] = False
+      return res
+
+    # Percent
+    res['percent'] = True if raw_data[7] & PERCENT else False
+
+    # Minus
+    minus = True if raw_data[7] & NEG else False
+    res['minus'] = minus
+
+    # Low battery
+    res['low_bat'] = True if raw_data[7] & PERCENT else False
+
+    # Overload
+    res['ovl'] = True if raw_data[7] & OL else False
+
+    # Delta
+    res['delta'] = True if raw_data[8] & DELTA else False
+
+    # UL
+    res['ul'] = True if raw_data[9] & UL else False
+
+    # MAX
+    res['max'] = True if raw_data[9] & MAX else False
+
+    # MIN
+    res['min'] = True if raw_data[9] & MIN else False
+
+    # DC
+    res['dc'] = True if raw_data[10] & DC else False
+
+    # AC
+    res['ac'] = True if raw_data[10] & AC else False
+
+    # AUTO
+    res['auto'] = True if raw_data[10] & AUTO else False
+
+    # Herz
+    res['hz'] = True if raw_data[10] & HZ else False
+
+    # Hold
+    res['hold'] = True if raw_data[11] & HOLD else False
+
+    # Measurement mode, range and units
+    meas_type = MEAS_TYPE[raw_data[6] & 0x0F]
+    range_id = raw_data[0] & 0b00000111
+    # If Herz or % is chosen in voltage or current measurement
+    # mode, corresponding range tuple is chosen.
+    if res['percent']:
+      meas_range = RANGE_PERCENT[range_id]
+    elif res['hz']:
+      meas_range = RANGE_F[range_id]
+    else:
+      meas_range = meas_type[1][range_id]
+    res['mode'] = meas_type[0]
+    res['range'] = meas_range[0]
+    res['units'] = meas_range[1]
+    multiplier = meas_range[2]
+
+    # Value
+    val = 0
+    for n in DIGIT_BYTES:
+      digit = raw_data[n] & DIGIT_MASK
+      val = val * 10 + digit
+    val *= multiplier
+    val = -val if minus else val
+    res['val'] = val
+
+    # Normalize value
+    nval = self.normalize_val(res['val'], res['units'])
+    res['norm_val'] = nval[0]
+    res['norm_units'] = nval[1]
+
+    res['data_valid'] = True
+
+    return res
+
+  def normalize_val(self, val, units):
+    """Normalizes measured value to standard units. Voltage 
         is normalized to Volt, current to Ampere, resistance to Ohm,
         capacitance to Farad and frequency to Herz.
         Other units are not changed."""
-        val = val * NORM_RULES[units][0]
-        units = NORM_RULES[units][1]
-        return (val, units) 
+    val = val * NORM_RULES[units][0]
+    units = NORM_RULES[units][1]
+    return (val, units)
 
-    def get_readable(self, disp_norm_val=False):
-        """Prints measurement details in human readable form.
+  def get_readable(self, disp_norm_val=False, simplified=False):
+    """Prints measurement details in human readable form.
         disp_norm_val: if True, normalized values will also be displayed.
         """
-        data = self.get_meas()
-        
-        if not data.get('data_valid', False):
-            return "UT61E is not connected."
-        
-        res = ""
-        
-        # AC/DC, HOLD, REL and low battery
-        ac_dc = ''
-        if data['dc']:
-            ac_dc = 'DC'
-        elif data['ac']:
-            ac_dc = 'AC'
-        peak = ''
-        if data['min']:
-            peak = 'MIN'
-        elif data['max']:
-            peak = 'MAX'
-        hold = 'HOLD' if data['hold'] else ''
-        rel = 'REL' if data['delta'] else ''
-        low_bat = 'LOW BAT' if data['low_bat'] else ''
-        res += "%s\t%s\t%s\t%s\t%s\n" % (ac_dc, peak, hold, rel, low_bat)
-        
-        # Mode and range
-        if data['auto']:
-            res += "MODE: %s\tAUTO\n" % (data['mode'])
-        else:
-            res += "MODE: %s\t%s %s\n" % (data['mode'], data['range'], data['units'])
-        
-        # Displayed value        
-        if data['ovl']:
-            res += "OL\n"
-        elif data['ul']:
-            res += "UL\n"
-        else:
-            res += "%s %s\n" % (data['val'], data['units'])
+    data = self.get_meas()
 
-        # Display normalized values
-        # If the DMM displayes OL or UL these values will be displayed
+    if not data.get('data_valid', False):
+      return "UT61E is not connected."
+
+    res = ""
+
+    # AC/DC, HOLD, REL and low battery
+    ac_dc = ''
+    if data['dc']:
+      ac_dc = 'DC'
+    elif data['ac']:
+      ac_dc = 'AC'
+    peak = ''
+    if data['min']:
+      peak = 'MIN'
+    elif data['max']:
+      peak = 'MAX'
+    hold = 'HOLD' if data['hold'] else ''
+    rel = 'REL' if data['delta'] else ''
+    low_bat = 'LOW BAT' if data['low_bat'] else ''
+    res += "%s\t%s\t%s\t%s\t%s\n" % (ac_dc, peak, hold, rel, low_bat)
+
+    # Mode and range
+    if data['auto']:
+      res += "MODE: %s\tAUTO\n" % (data['mode'])
+    else:
+      res += "MODE: %s\t%s %s\n" % (data['mode'], data['range'], data['units'])
+
+    # Displayed value
+    if data['ovl']:
+      res += "OL\n"
+    elif data['ul']:
+      res += "UL\n"
+    else:
+      res += "%s %s\n" % (data['val'], data['units'])
+
+    # Display normalized values
+    # If the DMM displayes OL or UL these values will be displayed
+    if disp_norm_val:
+      if data['ovl']:
+        res += "OL"
+      elif data['ul']:
+        res += "UL"
+      else:
+        res += "= %s %s" % (data['norm_val'], data['norm_units'])
+
+    if simplified:
+      if data['ovl']:
+        res = "OL"
+      elif data['ul']:
+        res = "UL"
+      else:
         if disp_norm_val:
-            if data['ovl']:
-                res += "OL"
-            elif data['ul']:
-                res += "UL"
-            else:
-                res += "= %s %s" % (data['norm_val'], data['norm_units'])
-        
-        return res
-    
-    def __del__(self):
-        if hasattr(self, '_ser'):
-            self._ser.close()
+          res = "%s, %s" % (data['norm_val'], data['norm_units'])
+        else:
+          res = "%s, %s" % (data['val'], data['units'])
+
+    return res
+
+  def __del__(self):
+    if hasattr(self, '_ser'):
+      self._ser.close()
+
 
 if __name__ == '__main__':
-    pass
+  pass

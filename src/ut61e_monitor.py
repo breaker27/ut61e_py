@@ -10,39 +10,45 @@ Created on Sep 22, 2017
 """
 
 from __future__ import print_function
-from src.ut61e import UT61E
+from ut61e import UT61E
 import sys
 import time
 import datetime
 from serial import SerialException
 
-SLEEP_TIME = 0.25
-PORT = "/dev/ttyUSB0"
+SLEEP_TIME = 0.1
+PORT = "/dev/tty.usbserial-1410"
 
 if __name__ == '__main__':
-    print("Starting UT61E monitor...")
-    
-    try:
-        if len(sys.argv) > 1:
-            port = sys.argv[1]
-        else:
-            port = PORT
-            
-        dmm = UT61E(PORT)
-        
-        while True:
-            meas = dmm.get_readable(disp_norm_val=True)
-            print()
-            print(datetime.datetime.now())
-            print(meas)
-    
-            time.sleep(SLEEP_TIME)
-            
-    except SerialException as e:
-        print("Serial port error.")
-        print(e)
-        
-    except KeyboardInterrupt:
+  print("Starting UT61E monitor...")
+
+  try:
+    if len(sys.argv) == 2:
+      port = sys.argv[1]
+      simplified = False
+    elif len(sys.argv) == 3:
+      port = sys.argv[1]
+      simplified = True
+    else:
+      port = PORT
+      simplified = False
+
+    dmm = UT61E(port)
+
+    while True:
+      meas = dmm.get_readable(disp_norm_val=True, simplified=simplified)
+      if not simplified:
         print()
-        print("Extiting UT61E monitor.")
-        sys.exit()
+        print(datetime.datetime.now())
+      print(meas)
+
+      time.sleep(SLEEP_TIME)
+
+  except SerialException as e:
+    print("Serial port error.")
+    print(e)
+
+  except KeyboardInterrupt:
+    print()
+    print("Extiting UT61E monitor.")
+    sys.exit()
