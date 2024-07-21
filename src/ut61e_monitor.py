@@ -4,7 +4,7 @@ Created on Sep 22, 2017
 @author: Dmitry Melnichansky 4X1MD ex 4X5DM, 4Z7DTF
          https://github.com/4x1md
          http://www.qrz.com/db/4X1MD
-         
+
 @note: The script uses UT61E class which to reads data from UNI-T UT61E using
        serial interface and displays it in human readable form.
 """
@@ -17,7 +17,7 @@ import datetime
 from serial import SerialException
 
 SLEEP_TIME = 1
-PORT = "/dev/tty.usbserial-1410"
+PORT = "/dev/ttyUSB0"
 
 if __name__ == '__main__':
   print("Starting UT61E monitor...")
