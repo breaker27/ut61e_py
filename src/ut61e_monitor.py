@@ -18,22 +18,35 @@ from serial import SerialException
 
 SLEEP_TIME = 1
 PORT = "/dev/ttyUSB0"
+outfile = "/dev/null"
+
+def syntax():
+    print("\nSyntax: " + sys.argv[0] + " [PORT] [FILE]");
+    print("   [PORT] is e.g. /dev/ttyUSB1");
+    print("   [FILE] is the filename to append the output to in simple format. Use /dev/null to output in simple format to stdout only.");
+
 
 if __name__ == '__main__':
   print("Starting UT61E monitor...")
 
   try:
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 1:
+      port = PORT
+      simplified = False
+    elif len(sys.argv) == 2:
       port = sys.argv[1]
       simplified = False
     elif len(sys.argv) == 3:
       port = sys.argv[1]
+      outfile = sys.argv[2]
       simplified = True
     else:
-      port = PORT
-      simplified = False
+      syntax()
+      sys.exit()
 
     dmm = UT61E(port)
+
+    f = open(outfile, "a")
 
     while True:
       meas = dmm.get_readable(disp_norm_val=True, simplified=simplified)
@@ -42,15 +55,19 @@ if __name__ == '__main__':
         print(datetime.datetime.now())
         print(meas)
       else:
-        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ',', meas)
+        s = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ',' + meas
+        print(s)
+        f.write(s)
 
       time.sleep(SLEEP_TIME)
 
   except SerialException as e:
     print("Serial port error.")
     print(e)
+    syntax()
 
   except KeyboardInterrupt:
     print()
     print("Extiting UT61E monitor.")
+    f.close()
     sys.exit()
