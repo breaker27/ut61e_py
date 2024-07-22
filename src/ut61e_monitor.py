@@ -19,12 +19,18 @@ from serial import SerialException
 SLEEP_TIME = 1
 PORT = "/dev/ttyUSB0"
 outfile = "/dev/null"
+sec = 0
 
 def syntax():
     print("\nSyntax: " + sys.argv[0] + " [PORT] [FILE]");
     print("   [PORT] is e.g. /dev/ttyUSB1");
     print("   [FILE] is the filename to append the output to in simple format. Use /dev/null to output in simple format to stdout only.");
 
+# Wait until next second with 10ms accuracy. Don't sleep, since over time there would be seconds without data.
+def waitNextSec():
+    while sec == int(time.time()):
+        sleep(0.01)
+    sec = int(time.time())
 
 if __name__ == '__main__':
   print("Starting UT61E monitor...")
@@ -49,6 +55,7 @@ if __name__ == '__main__':
     f = open(outfile, "a")
 
     while True:
+      waitNextSec()
       meas = dmm.get_readable(disp_norm_val=True, simplified=simplified)
       if not simplified:
         print()
@@ -59,7 +66,7 @@ if __name__ == '__main__':
         print(s)
         f.write(s)
 
-      time.sleep(SLEEP_TIME)
+      #time.sleep(SLEEP_TIME)
 
   except SerialException as e:
     print("Serial port error.")
