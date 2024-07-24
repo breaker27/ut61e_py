@@ -401,6 +401,11 @@ class UT61E(object):
         Other units are not changed."""
     val = val * NORM_RULES[units][0]
     units = NORM_RULES[units][1]
+
+    # avoid values like -0.018940000000000002
+    if units == 'V':
+        val = round(val, 5)
+
     return (val, units)
 
   def get_readable(self, disp_norm_val=False, simplified=False):
