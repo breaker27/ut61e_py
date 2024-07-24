@@ -466,9 +466,9 @@ class UT61E(object):
         res = "UL"
       else:
         if disp_norm_val:
-          res = "%s, %s" % (data['norm_val'], data['norm_units'])
+          res = "%s,%s" % (data['norm_val'], data['norm_units'])
         else:
-          res = "%s, %s" % (data['val'], data['units'])
+          res = "%s,%s" % (data['val'], data['units'])
 
     return res
 
