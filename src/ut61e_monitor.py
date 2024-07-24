@@ -17,35 +17,40 @@ import datetime
 from serial import SerialException
 
 SLEEP_TIME = 1
-PORT = "/dev/ttyUSB0"
+port = "/dev/ttyUSB0"
 outfile = "/dev/null"
-sec = 0
+sec = -1
 
 def syntax():
-    print("\nSyntax: " + sys.argv[0] + " [PORT] [FILE]");
-    print("   [PORT] is e.g. /dev/ttyUSB1");
-    print("   [FILE] is the filename to append the output to in simple format. Use /dev/null to output in simple format to stdout only.");
+    print("\nSyntax: " + sys.argv[0] + " [PORT] [FILE]")
+    print("   [PORT] is e.g. /dev/ttyUSB0 (= default)")
+    print("   [FILE] is the filename to append the measurements.")
+    print("          Use AUTO to create file name automatically using format YYYY-MM-DD-HH-MM-SS_ut61e.txt.")
+    print()
 
 # Wait until next second with 10ms accuracy. Don't sleep, since over time there would be seconds without data.
-def waitNextSec():
-    while sec == int(time.time()):
-        sleep(0.01)
-    sec = int(time.time())
+#def waitNextSec():
+#    global sec
+#    while sec == int(time.time()):
+#        time.sleep(0.01)
+#    sec = int(time.time())
 
 if __name__ == '__main__':
   print("Starting UT61E monitor...")
+  simplified = True
 
   try:
     if len(sys.argv) == 1:
-      port = PORT
-      simplified = False
+      syntax()
     elif len(sys.argv) == 2:
       port = sys.argv[1]
-      simplified = False
     elif len(sys.argv) == 3:
       port = sys.argv[1]
-      outfile = sys.argv[2]
-      simplified = True
+      if sys.argv[2] == "AUTO":
+        outfile = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S_ut61e.txt')
+      else:
+        outfile = sys.argv[2]
+      print("Writing to file " + outfile)
     else:
       syntax()
       sys.exit()
@@ -55,18 +60,16 @@ if __name__ == '__main__':
     f = open(outfile, "a")
 
     while True:
-      waitNextSec()
       meas = dmm.get_readable(disp_norm_val=True, simplified=simplified)
-      if not simplified:
-        print()
-        print(datetime.datetime.now())
-        print(meas)
-      else:
-        s = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ',' + meas
-        print(s)
-        f.write(s)
+      now = datetime.datetime.now()
 
-      #time.sleep(SLEEP_TIME)
+      if now.strftime('%S') != sec:
+        s = now.strftime('%Y-%m-%d %H:%M:%S') + ',' + meas
+        print(s)
+
+        if meas != "UT61E is not connected.":
+            f.write(s + "\n")
+            sec = now.strftime('%S')
 
   except SerialException as e:
     print("Serial port error.")
