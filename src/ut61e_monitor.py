@@ -74,7 +74,6 @@ if __name__ == '__main__':
   except SerialException as e:
     print("Serial port error.")
     print(e)
-    syntax()
 
   except KeyboardInterrupt:
     print()
