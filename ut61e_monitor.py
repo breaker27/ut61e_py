@@ -10,7 +10,7 @@ Created on Sep 22, 2017
 """
 
 from __future__ import print_function
-from ut61e import UT61E
+from lib.ut61e import UT61E
 import sys
 import time
 import datetime
