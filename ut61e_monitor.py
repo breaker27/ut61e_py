@@ -28,13 +28,6 @@ def syntax():
     print("          Use AUTO to create file name automatically using format YYYY-MM-DD-HH-MM-SS_ut61e.txt.")
     print()
 
-# Wait until next second with 10ms accuracy. Don't sleep, since over time there would be seconds without data.
-#def waitNextSec():
-#    global sec
-#    while sec == int(time.time()):
-#        time.sleep(0.01)
-#    sec = int(time.time())
-
 if __name__ == '__main__':
   print("Starting UT61E monitor...")
   simplified = True
